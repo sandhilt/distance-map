@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  api:
+     build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh ./docker-start.sh
+    volumes:
+      - .:/usr/src/app
+      - storage_api:/usr/src/app/node_modules
+    ports:
+      - 3333:3333
+      - 9229:9229
+    networks:
+      - default
+    depends_on:
+      - db
+  db:
+    image: postgres:13
+    volumes:
+      - storage_db:/var/lib/postgres/data
+    ports:
+      - 5432:5432
+    networks:
+      - default
+    environment:
+      POSTGRES_DB: "${DB_DATABASE}"
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+  adminer:
+    container_name: "adminer"
+    image: adminer
+    ports:
+      - 8080:8080
+    networks:
+      - default
+
