@@ -64,25 +64,6 @@ function allDistEuclid(locations: Location[]): Distance[] {
   distances.sort((a, b) => a.value - b.value);
 
   return distances;
-
-  // const distances: GeolocationDistance[][] = [];
-
-  //   const arr: GeolocationDistance[] = [];
-
-  //     const dist = distEuclid(
-  //       geolocations[i].latitute,
-  //       geolocations[i].longitude,
-  //     );
-  //     const distRounded = roundNumber(dist);
-  //     const geolocationDistance: GeolocationDistance = {
-  //       direction: `${geolocations[i].id} to ${geolocations[j].id}`,
-  //       distance: distRounded,
-  //     };
-  //     arr.push(geolocationDistance);
-  //   }
-  //   distances.push(arr);
-  // }
-  // return distances;
 }
 
 const AddressSchema = Joi.object({
