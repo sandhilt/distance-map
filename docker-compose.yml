@@ -1,0 +1,37 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:13
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: '${DB_USERNAME}'
+      POSTGRES_PASSWORD: '${DB_PASSWORD}'
+      POSTGRES_DB: '${DB_DATABASE}'
+    volumes:
+      - storage_db:/var/lib/postgres/data
+  api:
+    command: npm run start
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 3334:3334
+      - 9229:9229
+    volumes:
+      - .:/usr/src/app
+      - storage_api:/usr/src/app/node_modules
+    depends_on:
+      - db
+  adminer:
+    image: adminer
+    ports:
+      - 8080:8080
+    networks:
+      - default
+networks:
+  default:
+    driver: bridge
+volumes:
+  storage_api:
+  storage_db:
