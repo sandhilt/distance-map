@@ -6,7 +6,8 @@
     "start": "tsnd --inspect=0.0.0.0:9229 --respawn --exit-child src/server.ts",
     "build": "tsc --project ./",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "typeorm": "ts-node-dev ./node_modules/typeorm/cli.js"
   },
   "author": "Bruno Ochotorena <hackerhilt@gmail.com>",
   "dependencies": {
@@ -14,8 +15,8 @@
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "joi": "^17.4.2",
+    "pg": "^8.7.1",
     "reflect-metadata": "^0.1.13",
-    "sqlite3": "^5.0.2",
     "typeorm": "^0.2.38",
     "un": "0.0.0"
   },

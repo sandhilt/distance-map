@@ -5,9 +5,9 @@ export class Geolocation {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('double')
+  @Column('float')
   latitute: number;
 
-  @Column('double')
+  @Column('float')
   longitude: number;
 }

@@ -4,10 +4,10 @@ import * as dotenv from 'dotenv';
 import 'reflect-metadata';
 import { createConnection, getRepository } from 'typeorm';
 import { Location } from './entity/Location';
-import { distEuclidFromGeolocation, generateHash, roundNumber } from './utils';
+import { allDistEuclid, generateHash, roundNumber } from './utils';
 import { Geolocation } from './entity/Geolocation';
 import Joi from 'joi';
-import { AddressRequest, Distance } from './typings';
+import { AddressRequest } from './typings';
 
 dotenv.config();
 createConnection();
@@ -15,7 +15,7 @@ createConnection();
 const app = express();
 const googleMapsClient = new Client({});
 
-const PORT = parseInt(process.env.PORT ?? '8000', 10);
+const PORT = 3334;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -42,30 +42,6 @@ async function getLocationFromAddress(address: string) {
   return locationFixed;
 }
 
-function allDistEuclid(locations: Location[]): Distance[] {
-  const distances: Distance[] = [];
-
-  for (let i = 0, k = locations.length; i < k; i++) {
-    for (let j = i + 1; j < k; j++) {
-      const distanceNumber = distEuclidFromGeolocation(
-        locations[i].geolocation,
-        locations[j].geolocation,
-      );
-
-      const distance: Distance = {
-        address_1: locations[i].address_name,
-        address_2: locations[j].address_name,
-        value: roundNumber(distanceNumber),
-      };
-      distances.push(distance);
-    }
-  }
-
-  distances.sort((a, b) => a.value - b.value);
-
-  return distances;
-}
-
 const AddressSchema = Joi.object({
   address: Joi.array().min(2).items(Joi.string().required()),
 });
@@ -73,14 +49,14 @@ const AddressSchema = Joi.object({
 app.post('/addresses', async (req, res) => {
   const requestAddresses: AddressRequest = req.body;
 
-  AddressSchema.validate(requestAddresses, {
-    abortEarly: false,
-  });
-
-  const locationRepository = getRepository(Location);
-  const geoLocationRepository = getRepository(Geolocation);
-
   try {
+    AddressSchema.validate(requestAddresses, {
+      abortEarly: false,
+    });
+
+    const locationRepository = getRepository(Location);
+    const geoLocationRepository = getRepository(Geolocation);
+
     const locationAddresses: Location[] = await Promise.all(
       requestAddresses.addresses.map(async (addressName) => {
         const addressHash = generateHash(addressName);
