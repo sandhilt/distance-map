@@ -12,6 +12,9 @@ export class Location {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column('varchar', { nullable: false })
+  address_name: string;
+
   @Column('varchar', { nullable: false, unique: true })
   address_hash: string;
 
