@@ -1,8 +1,16 @@
-import express from "express";
-import { Client } from "@googlemaps/google-maps-services-js";
-import * as dotenv from "dotenv";
+import express from 'express';
+import { Client } from '@googlemaps/google-maps-services-js';
+import * as dotenv from 'dotenv';
+import 'reflect-metadata';
+import { createConnection, getRepository } from 'typeorm';
+import { Location } from './entity/Location';
+import { generateHash } from './utils/generateHash';
+import { Geolocation } from './entity/Geolocation';
+import Joi, { func } from 'joi';
 
 dotenv.config();
+createConnection();
+
 const app = express();
 const googleMapsClient = new Client({});
 
@@ -11,8 +19,8 @@ const PORT = parseInt(process.env.PORT ?? '8000', 10);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/", (req, res) => {
-  res.send("Hello world");
+app.get('/', (req, res) => {
+  res.send('Hello world');
 });
 
 async function getLocationFromAddress(address: string) {
@@ -23,19 +31,73 @@ async function getLocationFromAddress(address: string) {
     },
   });
 
-  return geocode;
+  const location = geocode.data.results[0].geometry.location;
+
+  return location;
 }
 
-app.post("/addresses", async (req, res) => {
-  console.log(req.body);
+function distEuclid(x: number, y: number): number {
+  return Math.sqrt(x * x + y * y);
+}
 
-  const [firstAddress] = req.body;
+function allDistEuclid(geolocations: Geolocation[]): number[] {
+  const distances: number[] = [];
+  for (let i = 0; i < geolocations.length; i++) {
+    for (let j = i + 1; j < geolocations.length; j++) {
+      const dist = distEuclid(
+        geolocations[i].latitute,
+        geolocations[i].longitude,
+      );
+      distances.push(dist);
+    }
+  }
+  return distances;
+}
+
+const AddressSchema = Joi.array().min(2).items(Joi.string().required());
+
+app.post('/addresses', async (req, res) => {
+  const allAddresses: string[] = req.body;
+
+  AddressSchema.validate(allAddresses, {
+    abortEarly: false,
+  });
+
+  const locationRepository = getRepository(Location);
+  const geoLocationRepository = getRepository(Geolocation);
 
   try {
-    const firstLocation = await getLocationFromAddress(firstAddress);
+    const geolocationAddresses = await Promise.all(
+      allAddresses.map(async (address) => {
+        const addressHash = generateHash(address);
 
-    console.log({ location: firstLocation, address: firstAddress });
-    res.status(200).send({ Addresses: req.body });
+        const [locationInDatabase] = await locationRepository.find({
+          where: { address_hash: addressHash },
+          relations: ['geolocation'],
+        });
+
+        if (locationInDatabase) {
+          return locationInDatabase.geolocation;
+        }
+
+        const geolocationAddress = await getLocationFromAddress(address);
+
+        const geolocation = new Geolocation();
+        geolocation.latitute = geolocationAddress.lat;
+        geolocation.longitude = geolocationAddress.lng;
+        await geoLocationRepository.save(geolocation);
+
+        const newLocation = new Location();
+        newLocation.address_hash = addressHash;
+        newLocation.geolocation = geolocation;
+        await locationRepository.save(newLocation);
+
+        return geolocation;
+      }),
+    );
+
+    console.log(geolocationAddresses);
+    res.status(200).send(geolocationAddresses);
   } catch (error) {
     console.error(error);
 

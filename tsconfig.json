@@ -1,18 +1,19 @@
 {
-    "compilerOptions": {
-        "target": "es6",
-        "module": "commonjs",
-        "rootDir": "./src",
-        "outDir": "./build",
-        "esModuleInterop": true,
-        "strict": true,
-        "sourceMap": true,
-        "noImplicitAny": true
-    },
-    "include": [
-        "./src/**/*.ts"
-    ], "exclude": [
-        "./node_modules",
-        "./build"
-    ]
+  "compilerOptions": {
+    "lib": ["es5", "es6"],
+    "target": "es6",
+    "module": "commonjs",
+    "rootDir": "./src",
+    "outDir": "./build",
+    "esModuleInterop": true,
+    "strict": true,
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "strictPropertyInitialization": false
+  },
+  "include": ["./src/**/*.ts"],
+  "exclude": ["./node_modules", "./build"]
 }

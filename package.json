@@ -12,6 +12,10 @@
     "@googlemaps/google-maps-services-js": "^3.2.6",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
+    "joi": "^17.4.2",
+    "reflect-metadata": "^0.1.13",
+    "sqlite3": "^5.0.2",
+    "typeorm": "^0.2.38",
     "un": "0.0.0"
   },
   "devDependencies": {
